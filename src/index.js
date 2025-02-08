@@ -102,25 +102,23 @@ const filterTradesBySimilarActivities = (trades, N, T) => {
 };
 
 
-// NOTE - The HELIUS ADDRESS ENDPOINT may return an incomplete set of transactions due to internal timeouts during data retrieval.
-// In case it returns an empty array, proceed to use the sample trades list.
 async function parseTradesForWallet(walletAddress) {
     try{
-    // using a combination of 2 helius RPC methods[getSignaturesForAddress(to get all txn signatures) + /v0/transactions endpoint(to get the parsed transactions corresponding to each signature)
 
     let transactionList = await connection.getSignaturesForAddress(new PublicKey(walletAddress), {limit:12});
     console.log("TRANSACTION LIST: ", transactionList)
     let signatureList = transactionList.map(transaction=>transaction.signature);
     console.log("SIGNATURE LIST: ", signatureList)
-    //Get parsed details of each transaction 
+    // parsed details of each transaction 
     let data = []
     for (let txn of signatureList){
         const parsedTxn = await connection.getParsedTransaction(txn, {maxSupportedTransactionVersion:0, commitment: "confirmed"})
         data.push(parsedTxn)
     }
-    // let data = await connection.getParsedTransactions(signatureList, {maxSupportedTransactionVersion:0, commitment: "confirmed"});
     console.log("Parsed TXNS: ",data)
 
+    // NOTE - The HELIUS ADDRESS ENDPOINT may return an incomplete set of transactions due to internal timeouts during data retrieval.
+    // In case it returns an empty array, proceed to use the sample trades list.
     // const signatures = await Promise.race([
     //     (async () => {
     //         const res1 = await fetch(`https://mainnet.helius-rpc.com/?api-key=${apiKey}`, {
